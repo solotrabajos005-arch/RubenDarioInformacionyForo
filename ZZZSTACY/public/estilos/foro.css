@@ -1,0 +1,172 @@
+/* === General === */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to bottom, #1e3c72, #2a5298, #3a70b2);
+    margin: 0;
+    padding: 20px;
+    color: #f0f0f0;
+}
+
+/* === Encabezados === */
+h1, h2, h3 {
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 12px;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+}
+
+/* === Links === */
+a {
+    color: #00d1ff;
+    text-decoration: none;
+    transition: 0.3s;
+}
+a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+/* === Contenedores principales === */
+#categorias, #temas, #comentarios {
+    margin-top: 20px;
+}
+
+/* === Categorías === */
+.categoria {
+    background: rgba(0, 50, 120, 0.6); /* azul oscuro translúcido */
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+.categoria:hover {
+    transform: translateY(-3px);
+    background: rgba(0, 70, 150, 0.8);
+}
+
+/* === Temas === */
+.tema {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 50, 120, 0.5); /* azul más profundo */
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+.tema:hover {
+    transform: translateY(-2px);
+    background: rgba(0, 70, 150, 0.7);
+}
+
+/* Barra de acciones dentro de tema */
+.tema .acciones {
+    display: flex;
+    gap: 5px;
+}
+
+/* === Comentarios === */
+.comentario {
+    background: rgba(0, 40, 100, 0.6); /* azul oscuro intenso */
+    padding: 10px 12px;
+    margin: 8px 0;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    position: relative;
+    transition: all 0.2s;
+}
+.comentario:hover {
+    background: rgba(0, 60, 140, 0.8);
+}
+.respuesta {
+    margin-left: 30px;
+    border-left: 2px solid #00d1ff;
+    padding-left: 10px;
+}
+
+/* === Formularios === */
+input[type="text"], input[name="contenido"], textarea {
+    width: 90%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: none;
+    margin: 5px 0;
+    font-size: 14px;
+    outline: none;
+    background: rgba(0,0,50,0.5);
+    color: #fff;
+}
+textarea {
+    resize: vertical;
+    min-height: 50px;
+}
+
+/* === Botones === */
+button {
+    background: linear-gradient(90deg, #00d1ff, #0079d3);
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+button:hover {
+    background: linear-gradient(90deg, #0079d3, #00d1ff);
+}
+
+/* Botones dentro de comentarios */
+.comentario button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+/* Botones de responder al lado izquierdo */
+.comentario form {
+    display: flex;
+    margin-top: 5px;
+}
+.comentario form input {
+    flex: 1;
+    margin-right: 5px;
+    background: rgba(0,0,50,0.5);
+    color: #fff;
+}
+
+/* === Usuario y logout === */
+#usuario {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+a[href="/logout"] {
+    background: #ff4b5c;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    margin-left: 10px;
+    transition: 0.3s;
+}
+a[href="/logout"]:hover {
+    background: #ff1e3c;
+}
+
+/* === Scroll comentarios largos === */
+#comentarios {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* === Destacar nombres de usuarios === */
+.tema b, .comentario b {
+    color: #00d1ff;
+}

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Foro</title>
+<style>
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to bottom, #1e3c72, #2a5298, #3a70b2);
+    margin: 0;
+    padding: 20px;
+    color: #f0f0f0;
+    text-align: center;
+}
+h1, #usuario {
+    text-align: center;
+}
+h2, h3 { font-weight: 700; color: #fff; margin-bottom: 12px; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
+a { color: #00d1ff; text-decoration: none; transition: 0.3s; }
+a:hover { color: #fff; text-decoration: underline; }
+
+#categorias {
+    margin-top: 20px;
+    display: inline-block;
+    text-align: center;
+}
+#temas, #comentarios {
+    margin-top: 20px;
+    display: block;
+    text-align: left;
+}
+
+.categoria-dropdown { display: inline-block; position: relative; margin: 5px 10px; cursor: pointer; }
+.categoria-dropdown .btn-cat { background: rgba(255,255,255,0.1); color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: 600; transition: all 0.3s ease; }
+.categoria-dropdown .btn-cat:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+.categoria-dropdown .dropdown-content { display: none; position: absolute; top: 110%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); padding: 12px 16px; border-radius: 10px; width: 220px; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 100; opacity: 0; transition: all 0.3s ease; }
+.categoria-dropdown:hover .dropdown-content { display: block; opacity: 1; }
+.dropdown-content h3 { margin-bottom: 6px; font-size: 1rem; color: #00d1ff; }
+.dropdown-content p { font-size: 0.85rem; color: #fff; line-height: 1.3; }
+
+.tema, .comentario { background: rgba(255,255,255,0.1); padding: 12px 15px; margin-bottom: 10px; border-radius: 12px; transition: all 0.3s ease; }
+.tema:hover { transform: translateY(-2px); background: rgba(255,255,255,0.15); }
+.comentario { box-shadow: 0 2px 6px rgba(0,0,0,0.2); position: relative; padding-bottom: 10px; }
+
+.tema .btn-borrar-tema { margin-left: 12px; background: #ff4b5c; padding: 4px 10px; font-size: 0.85rem; border-radius: 6px; }
+.tema .btn-borrar-tema:hover { background: #ff1e3c; }
+
+.respuesta { margin-left: 30px; border-left: 2px solid #00d1ff; padding-left: 10px; }
+
+input[type="text"], textarea { width: 90%; padding: 8px 10px; border-radius: 8px; border: none; margin: 5px 0; font-size: 14px; outline: none; }
+textarea { resize: vertical; min-height: 50px; }
+
+button { background: linear-gradient(90deg, #00d1ff, #0079d3); color: #fff; font-weight: 600; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: 0.3s; }
+button:hover { background: linear-gradient(90deg, #0079d3, #00d1ff); }
+
+#usuario { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+a[href="/logout"], #btnEliminar { background: #ff4b5c; color: white; padding: 6px 14px; border-radius: 6px; margin-left: 10px; transition: 0.3s; text-decoration: none; display: inline-block; }
+a[href="/logout"]:hover, #btnEliminar:hover { background: #ff1e3c; }
+
+#comentarios { max-height: 70vh; overflow-y: auto; padding-right: 5px; }
+
+.comentario .botones { display: flex; gap: 12px; margin-top: 8px; }
+.comentario form { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; width: 100%; box-sizing: border-box; }
+.comentario form input, .comentario form button, #temas form input, #temas form button { width: 100%; box-sizing: border-box; }
+</style>
+</head>
+<body>
+<h1>Foro.</h1>
+<p id="usuario"></p>
+<a href="/logout">Cerrar sesión</a>
+<button id="btnEliminar">Eliminar usuario</button>
+<hr>
+
+<div id="categorias"></div>
+<div id="temas"></div>
+<div id="comentarios"></div>
+
+<script>
+let usuarioActual = "";
+
+// =====================
+// Cargar usuario y categorías
+// =====================
+fetch("/api/usuario")
+  .then(r=>r.json())
+  .then(data=>{
+    usuarioActual = data.usuario;
+    document.getElementById("usuario").innerText = "Bienvenido, " + usuarioActual;
+    cargarCategorias();
+  });
+
+// =====================
+// Botón eliminar usuario
+// =====================
+document.getElementById("btnEliminar").onclick = ()=>{
+    if(!confirm("¿Seguro que quieres eliminar tu usuario? Esto no se puede deshacer")) return;
+    fetch("/api/eliminar-usuario", { method:"POST" })
+        .then(r=>r.json())
+        .then(res=>{
+            if(res.ok) {
+                // Redirigir a foro-inicio.html
+                window.location.href = "foro-inicio.html";
+            } else {
+                alert("Error eliminando usuario");
+            }
+        });
+};
+
+// =====================
+// Categorías
+// =====================
+function cargarCategorias() {
+    const div = document.getElementById("categorias");
+    div.innerHTML = "<h2>Categorías</h2>";
+    div.style.textAlign="center";
+    const categorias = [
+        {nombre:"general", descripcion:"Temas variados y anuncios importantes."},
+        {nombre:"discusiones", descripcion:"Debates y charlas sobre cualquier tema."},
+        {nombre:"preguntas", descripcion:"Resuelve dudas o pide consejos."}
+    ];
+
+    categorias.forEach(cat=>{
+        const drop = document.createElement("div");
+        drop.className="categoria-dropdown";
+
+        const btn = document.createElement("div");
+        btn.className="btn-cat";
+        btn.innerText = cat.nombre.toUpperCase();
+        btn.onclick = ()=>cargarTemas(cat.nombre);
+
+        const contenido = document.createElement("div");
+        contenido.className="dropdown-content";
+        contenido.innerHTML = `<h3>${cat.nombre}</h3><p>${cat.descripcion}</p>`;
+
+        drop.appendChild(btn);
+        drop.appendChild(contenido);
+        div.appendChild(drop);
+    });
+}
+
+// =====================
+// Cargar temas
+// =====================
+function cargarTemas(categoria){
+    const div = document.getElementById("temas");
+    div.innerHTML = `<h2>Temas en ${categoria.toUpperCase()}</h2>`;
+
+    const form = document.createElement("form");
+    form.onsubmit = e=>{
+        e.preventDefault();
+        const titulo = e.target.titulo.value;
+        fetch(`/api/${categoria}/nuevo`, {
+            method:"POST",
+            headers: {"Content-Type":"application/x-www-form-urlencoded"},
+            body:"titulo="+encodeURIComponent(titulo)
+        }).then(r=>r.json()).then(res=>{
+            if(res.ok) {
+                e.target.reset();
+                fetch(`/api/${categoria}`).then(r=>r.json()).then(temas=>renderTemas(categoria, temas));
+            }
+        });
+    };
+    form.innerHTML = `<input type="text" name="titulo" placeholder="Nuevo tema" required><button>Crear</button>`;
+    div.appendChild(form);
+
+    fetch(`/api/${categoria}`).then(r=>r.json()).then(temas=>renderTemas(categoria, temas));
+}
+
+function renderTemas(categoria, temas){
+    const div = document.getElementById("temas");
+    Array.from(div.querySelectorAll(".tema")).forEach(t=>t.remove());
+
+    temas.forEach(t=>{
+        const temaDiv = document.createElement("div");
+        temaDiv.className="tema";
+        temaDiv.dataset.id=t.id;
+        temaDiv.innerHTML = `<b>${t.titulo}</b> | ${t.autor}`;
+
+        if(t.autor===usuarioActual){
+            const btnBorrar = document.createElement("button");
+            btnBorrar.className = "btn-borrar-tema";
+            btnBorrar.innerText="Borrar Tema";
+            btnBorrar.onclick=e=>{
+                e.stopPropagation();
+                if(!confirm("¿Seguro que quieres borrar este tema?")) return;
+                fetch(`/api/${categoria}/tema/${t.id}/borrar`, {method:"POST"})
+                    .then(r=>r.json())
+                    .then(res=>{
+                        if(res.ok) temaDiv.remove();
+                    });
+            };
+            temaDiv.appendChild(btnBorrar);
+        }
+
+        temaDiv.onclick = ()=>cargarComentarios(categoria, t.id);
+        div.appendChild(temaDiv);
+    });
+}
+
+// =====================
+// Comentarios y respuestas en cascada
+// =====================
+function cargarComentarios(categoria, id){
+    fetch(`/api/${categoria}`).then(r=>r.json()).then(temas=>{
+        const tema = temas.find(t=>t.id==id);
+        const div = document.getElementById("comentarios");
+        div.innerHTML = `<h3>${tema.titulo}</h3><a href="#" onclick="cargarTemas('${categoria}')">Volver a temas</a>`;
+
+        const form = document.createElement("form");
+        form.onsubmit = e=>{
+            e.preventDefault();
+            const contenido = e.target.contenido.value;
+            fetch(`/api/${categoria}/tema/${id}/comentar`, { method:"POST",
+                headers: {"Content-Type":"application/x-www-form-urlencoded"},
+                body:"contenido="+encodeURIComponent(contenido)
+            }).then(r=>r.json()).then(res=>{ if(res.ok) cargarComentarios(categoria,id) });
+            e.target.reset();
+        };
+        form.innerHTML = `<textarea name="contenido" required placeholder="Escribe tu comentario"></textarea><button>Comentar</button>`;
+        div.appendChild(form);
+
+        function renderComentarios(lista, padre){
+            lista.forEach(c=>{
+                const cDiv = document.createElement("div");
+                cDiv.className="comentario";
+                if(padre!==div) cDiv.className+=" respuesta";
+                cDiv.dataset.id=c.id;
+
+                const contenidoDiv = document.createElement("div");
+                contenidoDiv.innerHTML=`<b>${c.autor}</b>: ${c.contenido}`;
+                cDiv.appendChild(contenidoDiv);
+
+                const botones = document.createElement("div");
+                botones.className="botones";
+
+                const btnResp = document.createElement("button");
+                btnResp.type="button"; btnResp.innerText="Responder";
+                botones.appendChild(btnResp);
+
+                if(c.autor===usuarioActual || tema.autor===usuarioActual){
+                    const btnBorrar = document.createElement("button");
+                    btnBorrar.type="button"; btnBorrar.innerText="Borrar";
+                    btnBorrar.onclick=e=>{
+                        e.stopPropagation();
+                        if(!confirm("¿Seguro que quieres borrar este comentario?")) return;
+                        fetch(`/api/${categoria}/tema/${id}/comentario/${c.id}/borrar`, {method:"POST"})
+                            .then(r=>r.json()).then(res=>{ if(res.ok) cDiv.remove() });
+                    };
+                    botones.appendChild(btnBorrar);
+                }
+
+                cDiv.appendChild(botones);
+
+                const formResp = document.createElement("form");
+                formResp.style.display="none";
+                formResp.style.flexDirection="column";
+                formResp.style.gap="6px";
+                formResp.onsubmit=e=>{
+                    e.preventDefault();
+                    const contenido=e.target.contenido.value;
+                    fetch(`/api/${categoria}/tema/${id}/responder`, {
+                        method:"POST",
+                        headers: {"Content-Type":"application/x-www-form-urlencoded"},
+                        body:"comentarioId="+encodeURIComponent(c.id)+"&contenido="+encodeURIComponent(contenido)
+                    }).then(r=>r.json()).then(res=>{ if(res.ok) cargarComentarios(categoria,id) });
+                    e.target.reset();
+                };
+                const inputResp = document.createElement("input");
+                inputResp.name="contenido"; inputResp.placeholder="Responder..."; inputResp.required=true;
+                const btnEnviar = document.createElement("button"); btnEnviar.innerText="Enviar";
+                formResp.appendChild(inputResp); formResp.appendChild(btnEnviar);
+
+                btnResp.onclick=e=>{
+                    e.stopPropagation();
+                    formResp.style.display=formResp.style.display==="none"?"flex":"none";
+                };
+
+                cDiv.appendChild(formResp);
+                padre.appendChild(cDiv);
+
+                if(c.respuestas && c.respuestas.length>0) renderComentarios(c.respuestas, cDiv);
+            });
+        }
+
+        renderComentarios(tema.comentarios, div);
+    });
+}
+</script>
+</body>
+</html>
